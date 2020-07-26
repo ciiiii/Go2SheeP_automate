@@ -1,45 +1,67 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
-	"os"
 
-	"github.com/gin-gonic/gin"
+	"time"
+
+	"github.com/ciiiii/Go2SheeP_notification/pusher"
+	"github.com/robfig/cron/v3"
 )
 
-var hotspotStatus = true
+func send() (string, error) {
+	request := pusher.NotifyRequest{
+		Interests: []string{"allen.ccccnm@gmail.com"},
+		Icon:      "",
+		Title:     "点外卖",
+		Body:      "",
+	}
+	body, err := json.Marshal(request)
+	if err != nil {
+		return "", err
+	}
+
+	res, err := http.Post("https://gotification.herokuapp.com/notify", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+	var result struct {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		PubId   string `json:"pubId"`
+	}
+	content, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+	if err := json.Unmarshal(content, &result); err != nil {
+		return "", err
+	}
+	if !result.Success {
+		return "", fmt.Errorf("notify failed: %s", result.Message)
+	}
+	return result.PubId, nil
+}
+
+func currentTime() string {
+	return time.Now().Format("2006.01.02 15:04:05")
+}
 
 func main() {
-	r := gin.New()
-	r.Use(gin.Logger())
-	r.Use(gin.Recovery())
-	gin.DisableConsoleColor()
-	hotspot := r.Group("/hotspot")
-	{
-		hotspot.GET("/", func(c *gin.Context) {
-			c.JSON(200, gin.H{
-				"success": true,
-				"status":  hotspotStatus,
-			})
-		})
-		hotspot.POST("/", func(c *gin.Context) {
-			hotspotStatus = true
-			c.JSON(200, gin.H{
-				"success": true,
-			})
-		})
-		hotspot.DELETE("/", func(c *gin.Context) {
-			hotspotStatus = false
-			c.JSON(200, gin.H{
-				"success": true,
-			})
-		})
-	}
-	server := &http.Server{
-		Addr:    ":" + os.Getenv("PORT"),
-		Handler: r,
-	}
-	if err := server.ListenAndServe(); err != nil {
+	c := cron.New()
+	if _, err := c.AddFunc("CRON_TZ=Asia/Shanghai 0 11 * * *", func() {
+		if pubId, err := send(); err != nil {
+			fmt.Printf("[FAIL]%s|%s\n", currentTime(), err.Error())
+		} else {
+			fmt.Printf("[SUCCESS]%s|PublishId: %s\n", currentTime(), pubId)
+		}
+	}); err != nil {
 		panic(err)
 	}
+	c.Run()
 }
