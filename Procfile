@@ -1,1 +1,1 @@
-web: Go2SheeP_automate
+worker: Go2SheeP_automate
