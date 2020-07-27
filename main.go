@@ -6,15 +6,20 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-
 	"time"
 
-	"github.com/ciiiii/Go2SheeP_notification/pusher"
 	"github.com/robfig/cron/v3"
 )
 
+type NotifyRequest struct {
+	Interests []string `json:"interests"`
+	Icon      string   `json:"icon"`
+	Title     string   `json:"title"`
+	Body      string   `json:"body"`
+}
+
 func send() (string, error) {
-	request := pusher.NotifyRequest{
+	request := NotifyRequest{
 		Interests: []string{"allen.ccccnm@gmail.com"},
 		Icon:      "",
 		Title:     "点外卖",
