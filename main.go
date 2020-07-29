@@ -59,7 +59,7 @@ func currentTime() string {
 
 func main() {
 	c := cron.New()
-	if _, err := c.AddFunc("CRON_TZ=Asia/Shanghai 0 11 * * *", func() {
+	if _, err := c.AddFunc("CRON_TZ=Asia/Shanghai 1 * * * *", func() {
 		if pubId, err := send(); err != nil {
 			fmt.Printf("[FAIL]%s|%s\n", currentTime(), err.Error())
 		} else {
