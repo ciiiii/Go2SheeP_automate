@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
-	"time"
 
 	"github.com/robfig/cron/v3"
 )
@@ -34,7 +34,9 @@ func send() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer res.Body.Close()
+	defer func() {
+		_ = res.Body.Close()
+	}()
 	var result struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
@@ -53,17 +55,13 @@ func send() (string, error) {
 	return result.PubId, nil
 }
 
-func currentTime() string {
-	return time.Now().Format("2006.01.02 15:04:05")
-}
-
 func main() {
-	c := cron.New()
-	if _, err := c.AddFunc("CRON_TZ=Asia/Shanghai 1 * * * *", func() {
+	c := cron.New(cron.WithSeconds())
+	if _, err := c.AddFunc("CRON_TZ=Asia/Shanghai * * 11 * * *", func() {
 		if pubId, err := send(); err != nil {
-			fmt.Printf("[FAIL]%s|%s\n", currentTime(), err.Error())
+			log.Printf("[FAIL]%s\n", err.Error())
 		} else {
-			fmt.Printf("[SUCCESS]%s|PublishId: %s\n", currentTime(), pubId)
+			log.Printf("[SUCCESS]PublishId: %s\n", pubId)
 		}
 	}); err != nil {
 		panic(err)
