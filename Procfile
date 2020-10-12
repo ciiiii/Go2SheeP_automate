@@ -1,1 +1,1 @@
-worker: Go2SheeP_automate
+service: Go2SheeP_automate
