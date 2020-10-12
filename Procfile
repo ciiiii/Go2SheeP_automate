@@ -1,2 +1,1 @@
-web: echo "dummy web"
-service: Go2SheeP_automate
+release: Go2SheeP_automate
