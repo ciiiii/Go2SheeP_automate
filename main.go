@@ -66,7 +66,7 @@ func main() {
 	}); err != nil {
 		panic(err)
 	}
-	if _, err := c.AddFunc("CRON_TZ=Asia/Shanghai * * * * * *", func() {
+	if _, err := c.AddFunc("CRON_TZ=Asia/Shanghai */10 * * * * *", func() {
 		log.Printf("[KEEPALIVE]")
 	}); err != nil {
 		panic(err)
