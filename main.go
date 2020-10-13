@@ -57,7 +57,7 @@ func send() (string, error) {
 
 func main() {
 	c := cron.New(cron.WithSeconds())
-	if _, err := c.AddFunc("CRON_TZ=Asia/Shanghai * * 11 * * *", func() {
+	if _, err := c.AddFunc("CRON_TZ=Asia/Shanghai 1 1 11 * * *", func() {
 		if pubId, err := send(); err != nil {
 			log.Printf("[FAIL]%s\n", err.Error())
 		} else {
